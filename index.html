@@ -167,14 +167,40 @@
 
 <body class="bg-zinc-100 text-zinc-900">
     <header class="bg-white shadow-sm">
-        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center">
-            <svg class="h-8 w-8 mr-2" width="43" height="26" viewBox="0 0 43 26" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <!-- Your SVG code here -->
-            </svg>
-            <h1 class="text-3xl font-bold text-zinc-900">AIP助手</h1>
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <div class="flex items-center">
+                <svg class="h-8 w-8 mr-2" width="43" height="26" viewBox="0 0 43 26" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <!-- Your SVG code here -->
+                </svg>
+                <h1 class="text-3xl font-bold text-zinc-900">AIP助手</h1>
+            </div>
+            <button id="userSettingsBtn" class="p-2 rounded-full bg-zinc-100 hover:bg-zinc-200 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </button>
         </div>
     </header>
+
+    <!-- 添加模态框 -->
+    <div id="userSettingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
+            <h2 class="text-2xl font-bold mb-4">用户设置</h2>
+            <div class="mb-4">
+                <label for="characterInput" class="block text-sm font-medium text-gray-700 mb-1">角色描述</label>
+                <textarea id="characterInput" rows="4" class="w-full p-2 border rounded-md"></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="goalInput" class="block text-sm font-medium text-gray-700 mb-1">目标</label>
+                <textarea id="goalInput" rows="2" class="w-full p-2 border rounded-md"></textarea>
+            </div>
+            <div class="flex justify-end">
+                <button id="saveSettingsBtn" class="px-4 py-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors duration-200">保存</button>
+                <button id="closeSettingsBtn" class="ml-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200">关闭</button>
+            </div>
+        </div>
+    </div>
 
     <div class="container max-w-7xl mx-auto">
         <div class="column bg-white m-4 rounded-lg shadow-lg">
@@ -200,21 +226,18 @@
             </div>
         </div>
 
-        <div class="column right-column bg-white m-4 rounded-lg shadow-lg">
+        <div class="column right-column bg-white m-4 rounded-lg shadow-lg flex flex-col">
             <h2 class="text-2xl font-semibold mb-4">文案内容</h2>
             <div id="rewriteLoader" class="loader hidden"></div>
-            <div id="rewriteResponseArea" class="hidden">
-                <p id="generatingMessage" class="text-center text-lg text-zinc-600 mt-8 hidden">正在生成文案中，大约一分钟...</p>
-                <div id="contentArea"></div>
+            <div id="rewriteResponseArea" class="hidden flex-grow overflow-hidden">
+                <div id="contentArea" class="h-full overflow-y-auto space-y-6 p-4"></div>
             </div>
         </div>
     </div>
 
     <script>
-
         let hotSearchData = [];
         let currentRewrittenContent = '';
-        let currentOrigin = '';
         let currentTopic = '';
 
         function sendRequest(type, input = '') {
@@ -232,57 +255,241 @@
             if (responseArea) responseArea.classList.remove('hidden');
 
             if (type === 'rewrite') {
-                document.getElementById('generatingMessage').classList.remove('hidden');
+                document.getElementById('rewriteLoader').classList.remove('hidden');
+                document.getElementById('rewriteResponseArea').classList.remove('hidden');
                 document.getElementById('contentArea').innerHTML = '';
-            }
+                query = {
+                    character: document.getElementById('characterInput').value || "小崇，从小在公务员家庭长大，对艺术有浓厚的兴趣，曾参与多种艺术培训，包括钢琴、吉他、笛子等。大学时因母亲下海经商失败，家庭经济陷入困境，深刻认识到财富的重要性，决定通过努力工作改善家庭经济状况。在教育行业耕多年后，转型新媒体，利用短视频知识分享提升个人IP影响力，并帮助他人实现业务增长。",
+                    goal: document.getElementById('goalInput').value || "帮助观众提升个人IP影响力，并帮助更多人实现个人和商业价值的提升。",
+                    example: "",
+                    topic: input
+                };
+                return generateContentDouban(query);
+            } else {
+                const myHeaders = new Headers({
+                    "Authorization": "Bearer pat_4v9gSIB3HXfqxMeXmXGG4gWHEVfiUrZfArcKIK06dXTFlVEiyQPuQMhDNzh2BUfe",
+                    "User-Agent": "Apifox/1.0.0 (https://apifox.com)",
+                    "Content-Type": "application/json",
+                    "Accept": "*/*",
+                    "Host": "api.coze.cn",
+                    "Connection": "keep-alive"
+                });
 
+                let query = input;
+                let rawData = {
+                    "conversation_id": "123",
+                    "bot_id": type === 'rewrite' ? "7411472845944930314" : "7395453761768063002",
+                    "user": "29032201862555",
+                    "query": query,
+                    "stream": type === 'rewrite'
+                };
+
+                const raw = JSON.stringify(rawData);
+
+                return fetch("https://api.coze.cn/open_api/v2/chat", {
+                    method: 'POST',
+                    headers: myHeaders,
+                    body: raw
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        parseJSON(result, type);
+                        if (submitBtn) submitBtn.disabled = false;
+                        if (loader) loader.classList.add('hidden');
+                        return result;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showErrorMessage('请失败，请后再试。');
+                        if (submitBtn) submitBtn.disabled = false;
+                        if (loader) loader.classList.add('hidden');
+                        throw error;
+                    });
+            }
+        }
+
+        function generateContentDouban(queryParams) {
             const myHeaders = new Headers({
                 "Authorization": "Bearer pat_4v9gSIB3HXfqxMeXmXGG4gWHEVfiUrZfArcKIK06dXTFlVEiyQPuQMhDNzh2BUfe",
-                "User-Agent": "Apifox/1.0.0 (https://apifox.com)",
                 "Content-Type": "application/json",
-                "Accept": "*/*",
-                "Host": "api.coze.cn",
-                "Connection": "keep-alive"
+                "Accept": "*/*"
             });
 
-            let query = input;
-            if (type === 'rewrite') {
-                query = JSON.stringify({
-                    origin: currentOrigin,
-                    user: "",
-                    goal: "",
-                    topic: currentTopic
-                });
+            const raw = JSON.stringify({
+                "bot_id": "7411472845944930314",
+                "user_id": "29032201862555",
+                "stream": true,
+                "auto_save_history": true,
+                "additional_messages": [
+                    {
+                        "role": "user",
+                        "content": JSON.stringify(queryParams),
+                        "content_type": "text"
+                    }
+                ]
+            });
+
+
+            const generateBtn = document.getElementById('hotSearchBtn');
+            const contentArea = document.getElementById('contentArea');
+
+            if (!generateBtn || !contentArea) {
+                console.error('Required elements not found');
+                return;
             }
 
-            let rawData = {
-                "conversation_id": "123",
-                "bot_id": type === 'rewrite' ? "7399186570660200448" : (type === 'douyin' ? "7399539580141387810" : "7395453761768063002"),
-                "user": "29032201862555",
-                "query": query,
-                "stream": false
-            };
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '生成中...';
+            contentArea.innerHTML = ''; // 清空之前的内容
 
-            const raw = JSON.stringify(rawData);
-
-            return fetch("https://api.coze.cn/open_api/v2/chat", {
+            fetch("https://api.coze.cn/v3/chat", {
                 method: 'POST',
                 headers: myHeaders,
                 body: raw
             })
-                .then(response => response.json())
-                .then(result => {
-                    parseJSON(result, type);
-                    if (submitBtn) submitBtn.disabled = false;
-                    if (loader) loader.classList.add('hidden');
-                    return result;
+                .then(response => {
+                    console.log('Received response:', response);
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+                    let avatarIndex = 1;
+
+                    let currentCard = null; // 在这里声明 currentCard 变量
+                    let cardCount = 0;
+                    function processText(text) {
+                        const contentArea = document.getElementById('contentArea');
+                        if (!contentArea) {
+                            console.error('Content area not found');
+                            return;
+                        }
+                        const events = text.split('\n\n');
+
+
+
+                        function createNewCard() {
+                            cardCount++;
+                            const card = document.createElement('div');
+
+                            if (cardCount <= 5) {
+                                // 前五条卡片使用小一点的步骤样式
+                                card.className = 'bg-gray-50 rounded-lg shadow-sm p-4 mb-4 ml-6 border-l-2 border-gray-300';
+
+                                const contentDiv = document.createElement('div');
+                                contentDiv.className = 'flex-1';
+
+                                card.appendChild(contentDiv);
+                                contentArea.appendChild(card);
+
+                                return contentDiv;
+                            } else {
+                                // 第六条卡片出现时，删除前五个卡片
+                                if (cardCount === 6) {
+                                    removeFirstFiveCards();
+                                }
+                                // 第六条及以后的卡片使用原来的样式
+                                card.className = 'bg-gray-50 rounded-lg shadow-md p-6 mb-6 flex items-start';
+
+                                const avatar = document.createElement('img');
+                                avatar.src = `https://sdf-tong.oss-cn-beijing.aliyuncs.com/avatar/avatar${avatarIndex}.png`;
+                                avatarIndex++;
+                                avatar.className = 'w-12 h-12 rounded-full mr-4';
+                                avatar.alt = 'Avatar';
+
+                                const contentDiv = document.createElement('div');
+                                contentDiv.className = 'flex-1';
+
+                                card.appendChild(avatar);
+                                card.appendChild(contentDiv);
+                                contentArea.appendChild(card);
+
+                                return contentDiv;
+                            }
+                        }
+
+                        function appendContent(content) {
+                            console.log('Appending content:', content);
+                            if (!currentCard) {
+                                currentCard = createNewCard();
+                            }
+
+                            if (content.includes('------')) {
+                                const parts = content.split('------');
+                                parts.forEach((part, index) => {
+                                    if (index === 0) {
+                                        console.log("part" + part)
+                                        currentCard.innerHTML += part.trim();
+                                        contentArea.scrollTop = contentArea.scrollHeight;
+                                    } else {
+                                        currentCard = createNewCard();
+                                        requestAnimationFrame(() => {
+                                            currentCard.innerHTML = part.trim();
+                                            contentArea.scrollTop = contentArea.scrollHeight;
+                                        });
+                                    }
+                                });
+                            } else {
+                                requestAnimationFrame(() => {
+                                    currentCard.innerHTML += content;
+                                    contentArea.scrollTop = contentArea.scrollHeight;
+                                });
+                            }
+                        }
+
+                        function removeFirstFiveCards() {
+                            const cards = contentArea.children;
+                            for (let i = 0; i < 5; i++) {
+                                if (cards[0]) {
+                                    contentArea.removeChild(cards[0]);
+                                }
+                            }
+                            // 重置卡片计数
+                            // cardCount = 1;
+                        }
+
+                        for (const event of events) {
+                            if (event.trim() === '') continue;
+                            const [eventType, data] = event.split('\n');
+                            if (eventType && data) {
+                                const eventName = eventType.split(':')[1];
+                                const jsonData = JSON.parse(data.slice(5)); // Remove "data:" prefix
+
+                                if (eventName === 'conversation.message.delta' && jsonData.role === 'assistant' && jsonData.type === 'answer') {
+                                    appendContent(jsonData.content);
+                                } else if (eventName === 'conversation.chat.completed') {
+                                    const generateBtn = document.getElementById('hotSearchBtn');
+                                    if (generateBtn) {
+                                        generateBtn.disabled = false;
+                                        generateBtn.innerHTML = '刷新热点';
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+                    function pump() {
+                        return reader.read().then(({ done, value }) => {
+                            if (done) {
+                                generateBtn.disabled = false;
+                                generateBtn.innerHTML = '刷新热点';
+                                return;
+                            }
+                            const chunk = decoder.decode(value, { stream: true });
+                            buffer += chunk;
+                            const lines = buffer.split('\n\n');
+                            buffer = lines.pop();
+                            processText(lines.join('\n\n'));
+                            return pump();
+                        });
+                    }
+
+                    return pump();
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showErrorMessage('请求失败，请稍后再试。');
-                    if (submitBtn) submitBtn.disabled = false;
-                    if (loader) loader.classList.add('hidden');
-                    throw error;
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '刷新热点';
+                    contentArea.innerHTML = '<p class="error-message">生成失败，请稍后再试</p>';
                 });
         }
 
@@ -291,9 +498,7 @@
                 const assistantMessage = jsonResponse.messages.find(msg => msg.role === 'assistant' && msg.type === 'answer');
                 if (assistantMessage) {
                     if (type === 'rewrite') {
-                        displayRewriteContent(assistantMessage.content);
-                    } else if (type === 'douyin') {
-                        processDouyinContent(assistantMessage.content);
+                        displayRewrittenContent(assistantMessage.content);
                     } else if (type === 'hotSearch') {
                         hotSearchData = JSON.parse(assistantMessage.content).output;
                         createHotSearchOptions();
@@ -302,7 +507,7 @@
                     showErrorMessage('未找到有效的响应内容。');
                 }
             } else {
-                showErrorMessage('响应格式不正确。');
+                showErrorMessage('响应格式不���确。');
             }
         }
 
@@ -342,7 +547,7 @@
                 const li = document.createElement('li');
                 li.className = 'p-3 bg-zinc-50 rounded-lg shadow hover:shadow-md transition-shadow duration-200';
                 li.innerHTML = `
-            <a href="#" class="flex items-center justify-between" onclick="getDouyinContent('${item.title}'); return false;">
+            <a href="#" class="flex items-center justify-between" onclick="sendRequest('rewrite', '${item.title}'); return false;">
                 <span class="font-medium">${item.title}</span>
                 <span class="text-sm text-zinc-500">${item.hot} 🔥</span>
             </a>
@@ -351,63 +556,22 @@
             });
         }
 
-        function getDouyinContent(keyword) {
-            const rewriteResponseArea = document.getElementById('rewriteResponseArea');
-            const generatingMessage = document.getElementById('generatingMessage');
-            if (rewriteResponseArea && generatingMessage) {
-                rewriteResponseArea.classList.remove('hidden');
-                generatingMessage.classList.remove('hidden');
-                document.getElementById('contentArea').innerHTML = '';
-            }
-
-            sendRequest('douyin', keyword)
-                .then(result => {
-                    if (result && result.messages) {
-                        const assistantMessage = result.messages.find(msg => msg.role === 'assistant' && msg.type === 'answer');
-                        if (assistantMessage) {
-                            processDouyinContent(assistantMessage.content);
-                        } else {
-                            showErrorMessage('未收到预期的响应格式。');
-                        }
-                    } else {
-                        showErrorMessage('获取内容失败。请稍后重试。');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showErrorMessage('获取内容时发生错误。请稍后重试。');
-                });
-        }
-
-        function processDouyinContent(content) {
-            try {
-                const parsedContent = JSON.parse(content);
-                if (parsedContent && parsedContent.output) {
-                    currentOrigin = parsedContent.output;
-                    // 获取到抖音内容后，立即请求生成文案
-                    sendRequest('rewrite', currentOrigin);
-                } else {
-                    showErrorMessage('未找到有效的抖音内容。');
-                }
-            } catch (error) {
-                console.error('Error parsing Douyin content:', error);
-                showErrorMessage('处理抖音内容时出错。');
-            }
-        }
-
-        function displayRewriteContent(content) {
-            document.getElementById('generatingMessage').classList.add('hidden');
+        function displayRewrittenContent(content) {
             const contentArea = document.getElementById('contentArea');
-            contentArea.innerHTML = `
-        <div class="bg-zinc-50 p-6 rounded-lg shadow-lg">
-            <h3 class="text-xl font-semibold mb-4">生成的文案</h3>
-            <div id="editableContent" class="editable-content bg-white border border-zinc-300 p-4 rounded-md mb-4" contenteditable="true">${content}</div>
-            <button id="copyButton" class="w-full p-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors duration-200">复制文案</button>
-        </div>
-    `;
+            contentArea.innerHTML = ''; // 清空现有内容
+
+            const card = createNewCard();
+            card.innerHTML = `
+                <div class="w-full">
+                    <h3 class="text-xl font-semibold mb-4">生成的文案</h3>
+                    <div id="editableContent" class="editable-content bg-white border border-zinc-300 p-4 rounded-md mb-4" contenteditable="true">${content}</div>
+                    <button id="copyButton" class="w-full p-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors duration-200">复制文案</button>
+                </div>
+            `;
+
+            contentArea.appendChild(card);
             currentRewrittenContent = content;
 
-            // 为复制按钮添加事件监听器
             document.getElementById('copyButton').addEventListener('click', copyContent);
         }
 
@@ -419,7 +583,6 @@
             navigator.clipboard.writeText(content).then(() => {
                 alert('文案已复制到剪贴板');
             }).catch(err => {
-                console.error('复制失败:', err);
                 alert('复制失败，请手动复制');
             });
         }
@@ -429,7 +592,6 @@
             if (rewriteResponseArea) {
                 rewriteResponseArea.innerHTML = `<p class="text-center text-red-600 mt-4">${message}</p>`;
             }
-            document.getElementById('generatingMessage').classList.add('hidden');
         }
 
         function initCustomSelect() {
@@ -457,7 +619,60 @@
             });
         }
 
-        // Initialize the custom select when the window loads
+        // 用户设置相关的代码
+        const userSettingsBtn = document.getElementById('userSettingsBtn');
+        const userSettingsModal = document.getElementById('userSettingsModal');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const characterInput = document.getElementById('characterInput');
+        const goalInput = document.getElementById('goalInput');
+
+        // 设置默认值
+        characterInput.value = "小崇，从小在公务员家庭长大，对艺术有浓厚的兴趣，曾参与多种艺术培训，包括钢琴、吉他、笛子等。大学时因母亲下海经商失败，家庭经济陷入困境，深刻认识到财富的重要性，决定通过努力工作改善家庭经济状况。在教育行业耕多年后，转型新媒体，利用短视频知识分享提升个人IP影响力，并帮助他人实现业务增长。";
+        goalInput.value = "帮助观众提升个人IP影响力，并帮助更多人实现个人和商业价值的提升。";
+
+        function openModal() {
+            userSettingsModal.classList.remove('hidden');
+            userSettingsModal.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // 禁止背景滚动
+        }
+
+        function closeModal() {
+            userSettingsModal.classList.add('hidden');
+            userSettingsModal.classList.remove('flex');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+
+        userSettingsBtn.addEventListener('click', openModal);
+        closeSettingsBtn.addEventListener('click', closeModal);
+
+        saveSettingsBtn.addEventListener('click', () => {
+            // 在这里可以添加保存逻辑，如果需要的话
+            closeModal();
+        });
+
+        // 点击模态框外部关闭模态框
+        userSettingsModal.addEventListener('click', (event) => {
+            if (event.target === userSettingsModal) {
+                closeModal();
+            }
+        });
+
+        // 阻止模态框内部点击事件冒泡到外部
+        userSettingsModal.querySelector('.bg-white').addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+        // 确保在页面加载完成后初始化事件监听器
+        document.addEventListener('DOMContentLoaded', function () {
+            const generateBtn = document.getElementById('hotSearchBtn');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', function () {
+                    sendRequest('hotSearch');
+                });
+            }
+        });
+
         window.onload = function () {
             initCustomSelect();
             sendRequest('hotSearch');
