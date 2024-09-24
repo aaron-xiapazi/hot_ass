@@ -16,25 +16,24 @@
 
         .container {
             display: flex;
+            flex-direction: column;
             height: calc(100vh - 60px);
             overflow: hidden;
+            padding-top: 60px;
+            /* 为固定的header腾出空间 */
         }
 
         .column {
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 2rem;
+            padding: 1rem;
             overflow-y: auto;
         }
 
-        .right-column {
-            flex: 1.5;
-        }
-
         .editable-content {
-            min-height: 300px;
-            max-height: 600px;
+            min-height: 150px;
+            max-height: 300px;
             overflow-y: auto;
         }
 
@@ -42,7 +41,6 @@
             position: relative;
             user-select: none;
             width: 100%;
-            max-width: 300px;
         }
 
         .custom-select {
@@ -59,12 +57,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 22px;
-            font-size: 16px;
+            padding: 0 12px;
+            font-size: 14px;
             font-weight: 500;
             color: #333;
-            height: 50px;
-            line-height: 50px;
+            height: 40px;
+            line-height: 40px;
             background: #ffffff;
             cursor: pointer;
             border: 1px solid #e0e0e0;
@@ -99,11 +97,11 @@
         .custom-option {
             position: relative;
             display: block;
-            padding: 12px 22px;
-            font-size: 16px;
+            padding: 8px 12px;
+            font-size: 14px;
             font-weight: 400;
             color: #333;
-            line-height: 24px;
+            line-height: 20px;
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -120,8 +118,8 @@
 
         .arrow {
             position: relative;
-            height: 15px;
-            width: 15px;
+            height: 12px;
+            width: 12px;
         }
 
         .arrow::before,
@@ -129,55 +127,65 @@
             content: "";
             position: absolute;
             bottom: 0px;
-            width: 0.15rem;
+            width: 0.12rem;
             height: 100%;
             transition: all 0.3s;
         }
 
         .arrow::before {
-            left: -5px;
+            left: -4px;
             transform: rotate(45deg);
             background-color: #394a6d;
         }
 
         .arrow::after {
-            left: 5px;
+            left: 4px;
             transform: rotate(-45deg);
             background-color: #394a6d;
         }
 
         .open .arrow::before {
-            left: -5px;
+            left: -4px;
             transform: rotate(-45deg);
         }
 
         .open .arrow::after {
-            left: 5px;
+            left: 4px;
             transform: rotate(45deg);
         }
 
         .hotspot-controls {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
             gap: 10px;
             margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
         }
     </style>
 </head>
 
 <body class="bg-zinc-100 text-zinc-900">
-    <header class="bg-white shadow-sm">
-        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+    <header class="bg-white shadow-sm fixed top-0 left-0 right-0 z-10">
+        <div class="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <div class="flex items-center">
-                <svg class="h-8 w-8 mr-2" width="43" height="26" viewBox="0 0 43 26" fill="none"
+                <svg class="h-6 w-6 mr-2 sm:h-8 sm:w-8" width="43" height="26" viewBox="0 0 43 26" fill="none"
                     xmlns="http://www.w3.org/2000/svg">
                     <!-- Your SVG code here -->
                 </svg>
-                <h1 class="text-3xl font-bold text-zinc-900">AIP助手</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold text-zinc-900">AIP助手</h1>
             </div>
-            <button id="userSettingsBtn" class="p-2 rounded-full bg-zinc-100 hover:bg-zinc-200 transition-colors duration-200">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <button id="userSettingsBtn"
+                class="p-2 rounded-full bg-zinc-100 hover:bg-zinc-200 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
             </button>
         </div>
@@ -185,28 +193,30 @@
 
     <!-- 添加模态框 -->
     <div id="userSettingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
-            <h2 class="text-2xl font-bold mb-4">用户设置</h2>
+        <div class="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-md relative m-4">
+            <h2 class="text-xl sm:text-2xl font-bold mb-4">用户设置</h2>
             <div class="mb-4">
                 <label for="characterInput" class="block text-sm font-medium text-gray-700 mb-1">角色描述</label>
-                <textarea id="characterInput" rows="4" class="w-full p-2 border rounded-md"></textarea>
+                <textarea id="characterInput" rows="6" class="w-full p-2 border rounded-md text-sm"></textarea>
             </div>
             <div class="mb-4">
                 <label for="goalInput" class="block text-sm font-medium text-gray-700 mb-1">目标</label>
-                <textarea id="goalInput" rows="2" class="w-full p-2 border rounded-md"></textarea>
+                <textarea id="goalInput" rows="3" class="w-full p-2 border rounded-md text-sm"></textarea>
             </div>
             <div class="flex justify-end">
-                <button id="saveSettingsBtn" class="px-4 py-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors duration-200">保存</button>
-                <button id="closeSettingsBtn" class="ml-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200">关闭</button>
+                <button id="saveSettingsBtn"
+                    class="px-3 py-1.5 sm:px-4 sm:py-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors duration-200 text-sm">保存</button>
+                <button id="closeSettingsBtn"
+                    class="ml-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200 text-sm">关闭</button>
             </div>
         </div>
     </div>
 
     <div class="container max-w-7xl mx-auto">
-        <div class="column bg-white m-4 rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold mb-4">当前热点</h2>
+        <div class="column bg-white m-2 sm:m-4 rounded-lg shadow-lg">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-4">当前热点</h2>
             <div class="hotspot-controls">
-                <div class="custom-select-wrapper">
+                <div class="custom-select-wrapper w-full">
                     <div class="custom-select">
                         <div class="custom-select__trigger"><span>正在获取热点</span>
                             <div class="arrow"></div>
@@ -216,21 +226,18 @@
                         </div>
                     </div>
                 </div>
-                <button id="hotSearchBtn"
-                    class="px-4 py-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors duration-200"
-                    onclick="sendRequest('hotSearch')">刷新热点</button>
             </div>
             <div id="hotSearchLoader" class="loader hidden"></div>
-            <div id="hotSearchResponseArea" class="hidden">
+            <div id="hotSearchResponseArea" class="hidden pb-8">
                 <ul id="hotSearchContent" class="space-y-2"></ul>
             </div>
         </div>
 
-        <div class="column right-column bg-white m-4 rounded-lg shadow-lg flex flex-col">
-            <h2 class="text-2xl font-semibold mb-4">文案内容</h2>
+        <div class="column bg-white m-2 sm:m-4 rounded-lg shadow-lg flex flex-col">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-4">文案内容</h2>
             <div id="rewriteLoader" class="loader hidden"></div>
             <div id="rewriteResponseArea" class="hidden flex-grow overflow-hidden">
-                <div id="contentArea" class="h-full overflow-y-auto space-y-6 p-4"></div>
+                <div id="contentArea" class="h-full overflow-y-auto space-y-4 sm:space-y-6 p-2 sm:p-4"></div>
             </div>
         </div>
     </div>
@@ -241,7 +248,6 @@
         let currentTopic = '';
 
         function sendRequest(type, input = '') {
-            const submitBtn = type === 'rewrite' ? document.getElementById('submitBtn') : document.getElementById('hotSearchBtn');
             const loader = document.getElementById(type + 'Loader');
             const responseArea = document.getElementById(type + 'ResponseArea');
 
@@ -250,7 +256,6 @@
                 document.querySelector('.custom-select__trigger span').textContent = '正在获取热点';
             }
 
-            if (submitBtn) submitBtn.disabled = true;
             if (loader) loader.classList.remove('hidden');
             if (responseArea) responseArea.classList.remove('hidden');
 
@@ -268,7 +273,6 @@
             } else {
                 const myHeaders = new Headers({
                     "Authorization": "Bearer pat_4v9gSIB3HXfqxMeXmXGG4gWHEVfiUrZfArcKIK06dXTFlVEiyQPuQMhDNzh2BUfe",
-                    "User-Agent": "Apifox/1.0.0 (https://apifox.com)",
                     "Content-Type": "application/json",
                     "Accept": "*/*",
                     "Host": "api.coze.cn",
@@ -294,14 +298,12 @@
                     .then(response => response.json())
                     .then(result => {
                         parseJSON(result, type);
-                        if (submitBtn) submitBtn.disabled = false;
                         if (loader) loader.classList.add('hidden');
                         return result;
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        showErrorMessage('请失败，请后再试。');
-                        if (submitBtn) submitBtn.disabled = false;
+                        showErrorMessage('请求失败，请稍后再试。');
                         if (loader) loader.classList.add('hidden');
                         throw error;
                     });
@@ -329,17 +331,13 @@
                 ]
             });
 
-
-            const generateBtn = document.getElementById('hotSearchBtn');
             const contentArea = document.getElementById('contentArea');
 
-            if (!generateBtn || !contentArea) {
+            if (!contentArea) {
                 console.error('Required elements not found');
                 return;
             }
 
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '生成中...';
             contentArea.innerHTML = ''; // 清空之前的内容
 
             fetch("https://api.coze.cn/v3/chat", {
@@ -354,7 +352,7 @@
                     let buffer = '';
                     let avatarIndex = 1;
 
-                    let currentCard = null; // 在这里声明 currentCard 变量
+                    let currentCard = null;
                     let cardCount = 0;
                     function processText(text) {
                         const contentArea = document.getElementById('contentArea');
@@ -364,15 +362,12 @@
                         }
                         const events = text.split('\n\n');
 
-
-
                         function createNewCard() {
                             cardCount++;
                             const card = document.createElement('div');
 
                             if (cardCount <= 5) {
-                                // 前五条卡片使用小一点的步骤样式
-                                card.className = 'bg-gray-50 rounded-lg shadow-sm p-4 mb-4 ml-6 border-l-2 border-gray-300';
+                                card.className = 'bg-gray-50 rounded-lg shadow-sm p-3 sm:p-4 mb-3 sm:mb-4 ml-4 sm:ml-6 border-l-2 border-gray-300 text-sm sm:text-base';
 
                                 const contentDiv = document.createElement('div');
                                 contentDiv.className = 'flex-1';
@@ -382,17 +377,15 @@
 
                                 return contentDiv;
                             } else {
-                                // 第六条卡片出现时，删除前五个卡片
                                 if (cardCount === 6) {
                                     removeFirstFiveCards();
                                 }
-                                // 第六条及以后的卡片使用原来的样式
-                                card.className = 'bg-gray-50 rounded-lg shadow-md p-6 mb-6 flex items-start';
+                                card.className = 'bg-gray-50 rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6 flex items-start text-sm sm:text-base';
 
                                 const avatar = document.createElement('img');
                                 avatar.src = `https://sdf-tong.oss-cn-beijing.aliyuncs.com/avatar/avatar${avatarIndex}.png`;
                                 avatarIndex++;
-                                avatar.className = 'w-12 h-12 rounded-full mr-4';
+                                avatar.className = 'w-8 h-8 sm:w-12 sm:h-12 rounded-full mr-3 sm:mr-4';
                                 avatar.alt = 'Avatar';
 
                                 const contentDiv = document.createElement('div');
@@ -442,8 +435,6 @@
                                     contentArea.removeChild(cards[0]);
                                 }
                             }
-                            // 重置卡片计数
-                            // cardCount = 1;
                         }
 
                         for (const event of events) {
@@ -456,22 +447,16 @@
                                 if (eventName === 'conversation.message.delta' && jsonData.role === 'assistant' && jsonData.type === 'answer') {
                                     appendContent(jsonData.content);
                                 } else if (eventName === 'conversation.chat.completed') {
-                                    const generateBtn = document.getElementById('hotSearchBtn');
-                                    if (generateBtn) {
-                                        generateBtn.disabled = false;
-                                        generateBtn.innerHTML = '刷新热点';
-                                    }
+                                    document.getElementById('rewriteLoader').classList.add('hidden');
                                 }
                             }
                         }
                     }
 
-
                     function pump() {
                         return reader.read().then(({ done, value }) => {
                             if (done) {
-                                generateBtn.disabled = false;
-                                generateBtn.innerHTML = '刷新热点';
+                                document.getElementById('rewriteLoader').classList.add('hidden');
                                 return;
                             }
                             const chunk = decoder.decode(value, { stream: true });
@@ -487,9 +472,8 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    generateBtn.disabled = false;
-                    generateBtn.innerHTML = '刷新热点';
-                    contentArea.innerHTML = '<p class="error-message">生成失败，请稍后再试</p>';
+                    document.getElementById('rewriteLoader').classList.add('hidden');
+                    contentArea.innerHTML = '<p class="error-message text-sm sm:text-base">生成失败，请稍后再试</p>';
                 });
         }
 
@@ -507,7 +491,7 @@
                     showErrorMessage('未找到有效的响应内容。');
                 }
             } else {
-                showErrorMessage('响应格式不���确。');
+                showErrorMessage('响应格式不正确。');
             }
         }
 
@@ -545,11 +529,11 @@
             currentTopic = hotSearchData[index].name;
             hotSearchData[index].data.forEach(item => {
                 const li = document.createElement('li');
-                li.className = 'p-3 bg-zinc-50 rounded-lg shadow hover:shadow-md transition-shadow duration-200';
+                li.className = 'p-2 sm:p-3 bg-zinc-50 rounded-lg shadow hover:shadow-md transition-shadow duration-200 text-sm sm:text-base';
                 li.innerHTML = `
             <a href="#" class="flex items-center justify-between" onclick="sendRequest('rewrite', '${item.title}'); return false;">
                 <span class="font-medium">${item.title}</span>
-                <span class="text-sm text-zinc-500">${item.hot} 🔥</span>
+                <span class="text-xs sm:text-sm text-zinc-500">${item.hot} 🔥</span>
             </a>
         `;
                 hotSearchList.appendChild(li);
@@ -560,12 +544,13 @@
             const contentArea = document.getElementById('contentArea');
             contentArea.innerHTML = ''; // 清空现有内容
 
-            const card = createNewCard();
+            const card = document.createElement('div');
+            card.className = 'bg-gray-50 rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6';
             card.innerHTML = `
                 <div class="w-full">
-                    <h3 class="text-xl font-semibold mb-4">生成的文案</h3>
-                    <div id="editableContent" class="editable-content bg-white border border-zinc-300 p-4 rounded-md mb-4" contenteditable="true">${content}</div>
-                    <button id="copyButton" class="w-full p-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors duration-200">复制文案</button>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">生成的文案</h3>
+                    <div id="editableContent" class="editable-content bg-white border border-zinc-300 p-3 sm:p-4 rounded-md mb-3 sm:mb-4 text-sm sm:text-base" contenteditable="true">${content}</div>
+                    <button id="copyButton" class="w-full p-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors duration-200 text-sm sm:text-base">复制文案</button>
                 </div>
             `;
 
@@ -590,7 +575,7 @@
         function showErrorMessage(message) {
             const rewriteResponseArea = document.getElementById('rewriteResponseArea');
             if (rewriteResponseArea) {
-                rewriteResponseArea.innerHTML = `<p class="text-center text-red-600 mt-4">${message}</p>`;
+                rewriteResponseArea.innerHTML = `<p class="text-center text-red-600 mt-4 text-sm sm:text-base">${message}</p>`;
             }
         }
 
@@ -665,17 +650,11 @@
 
         // 确保在页面加载完成后初始化事件监听器
         document.addEventListener('DOMContentLoaded', function () {
-            const generateBtn = document.getElementById('hotSearchBtn');
-            if (generateBtn) {
-                generateBtn.addEventListener('click', function () {
-                    sendRequest('hotSearch');
-                });
-            }
+            initCustomSelect();
+            sendRequest('hotSearch');
         });
 
         window.onload = function () {
-            initCustomSelect();
-            sendRequest('hotSearch');
             document.querySelector('.custom-select__trigger span').textContent = '正在获取热点';
         };
     </script>
